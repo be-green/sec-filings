@@ -48,3 +48,11 @@ get_crawler <- function(year, quarter){
   
 }
 
+for(i in 1993:year(Sys.Date())) {
+  for(j in 1:3) {
+    tryCatch({
+      get_crawler(i, j)
+    }, function(e) print(e))
+  }
+}
+
