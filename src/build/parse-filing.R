@@ -30,9 +30,9 @@ get_filing_html <- function(filing_text_link) {
   filing <- 
     readLines(filing_text_link) %>% 
       paste0(collapse = "") %>% 
-      str_split(pattern = "<HTML><HEAD>", simplify = T)
+      str_split(pattern = "<TABLE>", simplify = T)
   
-  ends <- str_locate(filing, "</BODY></HTML>")[,2]
+  ends <- str_locate(filing, "</TABLE>")[,2]
   
   
   file_list <- list()
@@ -40,7 +40,7 @@ get_filing_html <- function(filing_text_link) {
   for(i in 1:length(filing)) {
     if(is.na(ends[i])) {
     } else {
-      file_list[[i]] <- paste0("<HTML><HEAD>", 
+      file_list[[i]] <- paste0("<TABLE>", 
                                str_sub(filing[i], start = 0, end = ends[i]))
     }
   }
@@ -53,15 +53,17 @@ get_filing_html <- function(filing_text_link) {
 }
 
 parse_filing_html <- function(filing) {
-   tbls <- rvest::html_table(filing)
+   tbls <- rvest::html_table(filing, )
    
    # grab tables with number,number
    holdings_tbls <- 
      Filter(function(x) str_count(paste0(x,collapse = ""), "[0-9],[0-9]") > 5,
           tbls)
+   
+   holdings_tbls
 }
 
 
-file_list <- get_filing_html(all_filings$FilingText[400])
+file_list <- get_filing_html(all_filings$FilingText[10])
 
 

@@ -2,3 +2,4 @@
 data/*
 *.Rproj
 *.Rproj.user
+.Rproj.user
