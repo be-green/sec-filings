@@ -5,7 +5,7 @@ This is a repo dedicated to building a complete list of SEC filed holdings. Cert
 # Requirements
 
 * R programming language
-* Java 7 or higher.
+* Java SE 8 or higher.
 
 # Goals, Structure, Layout
 
