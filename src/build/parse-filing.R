@@ -1,26 +1,5 @@
 library(data.table)
 library(stringr)
-library(magrittr)
-library(xml2)
-library(rvest)
-
-filing_year <- 2008
-
-list_filings <- function(year) {
-  list.files("data/processed/2008", 
-             full.names = T, 
-             recursive = T, 
-             pattern = "crawler.csv")
-}
-
-all_filings <-
-  lapply(list_filings(filing_year), fread) %>% 
-  rbindlist(idcol = T) %>% 
-  .[FilingType %like% "N-Q"]
-
-all_filings[,FilingText := str_replace(FilingLink, 
-                                   pattern = "-index.htm",
-                                   ".txt")]
 
 # returns an xml2 object containing all of the html
 # in the relevant filing
@@ -30,9 +9,9 @@ get_filing_html <- function(filing_text_link) {
   filing <- 
     readLines(filing_text_link) %>% 
       paste0(collapse = "") %>% 
-      str_split(pattern = "<TABLE>", simplify = T)
+      str_split(pattern = "<BODY>", simplify = T)
   
-  ends <- str_locate(filing, "</TABLE>")[,2]
+  ends <- str_locate(filing, "</BODY>")[,2]
   
   
   file_list <- list()
@@ -40,7 +19,7 @@ get_filing_html <- function(filing_text_link) {
   for(i in 1:length(filing)) {
     if(is.na(ends[i])) {
     } else {
-      file_list[[i]] <- paste0("<TABLE>", 
+      file_list[[i]] <- paste0("<BODY>", 
                                str_sub(filing[i], start = 0, end = ends[i]))
     }
   }
@@ -53,7 +32,7 @@ get_filing_html <- function(filing_text_link) {
 }
 
 parse_filing_html <- function(filing) {
-   tbls <- rvest::html_table(filing, )
+   tbls <- rvest::html_table(filing)
    
    # grab tables with number,number
    holdings_tbls <- 
@@ -64,6 +43,12 @@ parse_filing_html <- function(filing) {
 }
 
 
-file_list <- get_filing_html(all_filings$FilingText[10])
+# list of all filings in a given year 
+list_filings <- function(year) {
+  list.files(paste0("data/processed/", year), 
+             full.names = T, 
+             recursive = T, 
+             pattern = "crawler.csv")
+}
 
 

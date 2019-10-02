@@ -6,23 +6,29 @@ check_pattern <- function(x, pattern, threshold = 0.3) {
   sum(str_count(x, pattern), na.rm = T)/length(x) > threshold
 }
 
+## check for e.g. 1,000
 check_comma <- function(x, threshold = 0.3) {
   check_pattern(x, 
                 pattern = "[0-9],[0-9]{3}",
                 threshold = threshold)
 } 
 
+## check for e.g. 9%
+## check that it isn't embedded in a sentence
 check_percent <- function(x, threshold = 0.3) {
   check_pattern(x, pattern = "[0-9]\\%",
                 threshold = threshold) &
     !check_pattern(x, pattern = paste0("[A-Za-z, \\.]{",sapply(nchar(x)/2, round),"}"))
 }
 
+## check if a number is in parentheses
+## commonly used in financial documents to represent negative numbers
 check_parens <- function(x, threshold = 0.05) {
   check_pattern(x, pattern = "\\([0-9,\\.]+\\)",
                 threshold = threshold)
 }
 
+## check if a vector is entirely numbers
 check_numeric <- function(x) {
   
   suppressWarnings({
@@ -38,7 +44,7 @@ check_numeric <- function(x) {
 }
 
 
-
+## try to convert something to dates, fails if everything is NA
 try_date <- function(x, format) {
   
   suppressWarnings({
@@ -72,11 +78,14 @@ try_date <- function(x, format) {
 #   
 # }
 
+## check if something is a character vector, not numbers formatted
+## as text
 check_character <- function(x) {
   charcheck <- str_replace_all(x, "[0-9,\\.\\$\\%,]","")
   median(sapply(charcheck, nchar), na.rm = T) > 5
 }
 
+## checks these formats in the right order
 check_format <- function(x) {
   if (length(x[which(!is.na(x))]) == 0) {
     NA
