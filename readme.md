@@ -35,12 +35,18 @@ _data
 ```
 
 Each filing will have its own parsed table with the CIK (SEC given ID) and filing type in the name of the file. This is going to parse all fiings from years 1993 through the present.
+
+# Structure and use
+
+The src/ folder will contain most of the source code. parse-crawler.R will grab the relevant parsing files from the SEC Edgar website, and those can subsequently be used by parse-filings.R. The functions in the src/helpers folder are functions used by the various parsers. The src/build scripts will actually be responsible for building the end result. parse-crawler is working now, but parse-filing is not. The src/algorith-attempts folder contains the current attempts to build parsers, some of which are text based and/or html based and some of which are built on OCR tools.
+
+There will be an all-encompassing build script, but since almost all of this does not yet do what it sets out to, it wouldn't really build anything! As we get to a point where the parser has a decent level of coverage, I'll add in a build script. If you feel like playing around with it, start with parse-crawler; parse-filing relies on that script.
  
-## Filing Types
+# Filing Types
 
 Largely these holdings tables will be based on the N-Q filings, although there have been recent changes on filing formats. Depending on what is easiest, we may switch which ones we parse in the more recent periods.
 
-## Approach
+# Approach
 
 The main issue with these filings is that there is no standard table structure. Some use ascii characters and spaces to denote their tables, with random linebreaks to make them look nice, and others use html table structures. Even those that use html tables have improper linebreaks, as instead of using some kind of css formatting they decided to make the html look better by putting line breaks where they wouldn't otherwise go.
 
