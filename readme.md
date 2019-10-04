@@ -38,7 +38,7 @@ Each filing will have its own parsed table with the CIK (SEC given ID) and filin
 
 ## Use and Build Process
 
-The src/ folder will contain most of the source code. parse-crawler.R will grab the relevant parsing files from the SEC Edgar website, and those can subsequently be used by parse-filings.R. The functions in the src/helpers folder are functions used by the various parsers. The src/build scripts will actually be responsible for building the end result. parse-crawler is working now, but parse-filing is not. The src/algorith-attempts folder contains the current attempts to build parsers, some of which are text based and/or html based and some of which are built on OCR tools.
+The src/ folder will contain most of the source code. parse-crawler.R will grab the relevant parsing files from the SEC Edgar website, and those can subsequently be used by parse-filings.R. The functions in the src/helpers folder are functions used by the various parsers. The src/build scripts will actually be responsible for building the end result. parse-crawler is working now, but parse-filing is not. The src/algorithm-attempts folder contains the current attempts to build parsers, some of which are text based and/or html based and some of which are built on OCR tools.
 
 There will be an all-encompassing build script, but since almost all of this does not yet do what it sets out to, it wouldn't really build anything! As we get to a point where the parser has a decent level of coverage, I'll add in a build script. If you feel like playing around with it, start with parse-crawler; parse-filing relies on that script.
  
