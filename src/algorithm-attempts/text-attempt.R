@@ -12,9 +12,10 @@ invisible(source("src/build/parse-filing.R"))
 library(magrittr)
 library(xml2)
 library(rvest)
+library(data.table)
 
 ## single year to start
-filing_year <- 2012
+filing_year <- 2008
 
 # list the filings for the year, combine them into one data table
 all_filings <-
@@ -29,44 +30,32 @@ all_filings[,FilingText := str_replace(FilingLink,
                                        pattern = "-index.htm",
                                        ".txt")]
 
+### test cases ###
+
+test_cases <- c("https://www.sec.gov/Archives/edgar/data/832566/0001104659-08-072666.txt",
+                "https://www.sec.gov/Archives/edgar/data/1233310/000093506908000486/0000935069-08-000486.txt",
+                "https://www.sec.gov/Archives/edgar/data/354603/0000935069-08-002855.txt",
+                "https://www.sec.gov/Archives/edgar/data/810598/0000900092-08-000052.txt")
 
 # use a specific filing to test our parser
 # this should return 10 html tables
 # thanks to xbrl, html is embedded INSIDE an XML schema
 # normal xml parsers don't recognize it
-file_list <- get_filing_html(all_filings$FilingText[10])
 
-# grab the tables out of the html
-filings <- lapply(file_list, parse_filing_html)
+### HTML example ###
+# gets the raw filing text
+filing <- get_filing(test_cases[1])
 
-# test our text parser on a specific table in the list
-holdings_tbls <- filings[[1]]
+# pulls out the relevant html
+filing_html <- get_filing_html(filing)
 
-# function that converts factors back to strings and removes
-# na rows, replacing "" with NA values to properly identify
-# NULL values
-clean_table <- function(tbl) {
-  tbl <- as.data.table(lapply(tbl, 
-                              function(x) {
-                                if(is.factor(x)) {
-                                  as.character(x) 
-                                  } else {
-                                    x
-                                  }
-                                }))
-  remove_na_rows(remove_na_cols(replace_empty(tbl)))
-}
+# pulls out the tables in the html, converts to text
+# for cleanup
+filing_html_tables <- lapply(filing_html, parse_filing_html)
 
-# still doesn't really work yet since there's no standard format
-cleaned <- 
-  lapply(holdings_tbls, clean_table) %>% # fix some NA rows
-  lapply(remove_header) %>% # remove the header
-  # lapply(make_names) %>%  # construct column names
-  rbindlist(use.names = T,fill = T) # merge the table back together
+# dispatch relevant parser
+parsed_tables <- lapply(filing_html_tables[[1]], parse_tables) %>% 
+  get_relevant_tables %>% 
+  rbindlist
 
 
-for(i in 1:length(cleaned)){
-  print(i)
-  get_main_data(cleaned[[i]]) # get the central data, not the headers
-  
-}

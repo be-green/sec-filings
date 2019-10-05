@@ -104,14 +104,20 @@ check_format <- function(x) {
   }
 }
 
+# convert string to number
 convert_numeric <- function(x) {
   as.numeric(x)
 }
 
+# convert percentage to number
 convert_percent <- function(x) {
-  paste0(str_extract_all(x, "[0-9\\.]", simplify = T), collapse = "")
+  as.numeric(
+    paste0(str_extract_all(x, "[0-9\\.]", simplify = T), 
+           collapse = "")
+  )
 }
 
+# convert an identified number format to actual number
 convert_format <- function(x) {
   format <- check_format(x)
   
