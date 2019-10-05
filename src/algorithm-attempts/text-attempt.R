@@ -44,7 +44,7 @@ test_cases <- c("https://www.sec.gov/Archives/edgar/data/832566/0001104659-08-07
 
 ### HTML example ###
 # gets the raw filing text
-filing <- get_filing(test_cases[1])
+filing <- get_filing(test_cases[4])
 
 # pulls out the relevant html
 filing_html <- get_filing_html(filing)
