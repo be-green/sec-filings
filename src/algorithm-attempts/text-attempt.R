@@ -1,9 +1,11 @@
 
 # source relevant scripts first
-allscripts <- list.files("src/helpers/", full.names = T)
+allhelpers <- list.files("src/helpers/", full.names = T)
+allparsers <- list.files("src/parsers/", full.names = T)
 
 ## don't want the output
-invisible(lapply(allscripts, source))
+invisible(lapply(allhelpers, source))
+invisible(lapply(allparsers, source))
 invisible(source("src/build/parse-filing.R"))
 
 # create a list of test filings
@@ -21,7 +23,7 @@ filing_year <- 2008
 all_filings <-
   lapply(list_filings(filing_year), fread) %>% 
   rbindlist(idcol = T) %>% 
-  .[FilingType %like% "N-Q"] # subset for just N-Q filings
+  .[FilingType %like% "N-Q|N-30D"] # subset for just N-Q filings
 
 # text document version of the filing
 # otherwise it links to the parent site on the SEC website
@@ -44,7 +46,7 @@ test_cases <- c("https://www.sec.gov/Archives/edgar/data/832566/0001104659-08-07
 
 ### HTML example ###
 # gets the raw filing text
-filing <- get_filing(test_cases[4])
+filing <- get_filing(test_cases[1])
 
 # pulls out the relevant html
 filing_html <- get_filing_html(filing)
@@ -57,5 +59,3 @@ filing_html_tables <- lapply(filing_html, parse_filing_html)
 parsed_tables <- lapply(filing_html_tables[[1]], parse_tables) %>% 
   get_relevant_tables %>% 
   rbindlist
-
-
