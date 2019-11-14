@@ -47,12 +47,3 @@ get_crawler <- function(year, quarter){
   fwrite(crawler, paste0("data/processed/",year,"/",quarter,"/crawler.csv"))
   
 }
-# 
-# for(i in 1993:year(Sys.Date())) {
-#   for(j in 1:3) {
-#     tryCatch({
-#       get_crawler(i, j)
-#     }, error = function(e) print(e))
-#   }
-# }
-

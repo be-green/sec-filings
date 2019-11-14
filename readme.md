@@ -2,10 +2,26 @@
 
 This is a repo dedicated to building a complete list of SEC filed holdings. Certainly a work in progress, with more details to come.
 
+## Status
+
+* The SEC Crawlers are working
+* Multiple working test casts for html filings
+* Prototype text parser, and filter that guesses text vs. html
+* Tests have worked with multiple filing types
+* Header parsing works for all filing types
+* Column format classifiers are working as intended
+
+## To-Do
+
+* Organize build process
+* Leverage header information to properly split tables between funds
+* Write out fund-level dataset to local .csv file in the data/ folder
+* Scale up test cases on the order of 100 randomly sampled filings
+* Figure out how to properly parse bond data...
+
 # Requirements
 
 * R programming language
-* Java SE 8 or higher.
 
 # Goals, Structure, Layout
 
@@ -17,7 +33,16 @@ This is a repo dedicated to building a complete list of SEC filed holdings. Cert
 
 ## Structure
 
-The current layout puts most of the emphasis in the src/ folder, which contains scripts for the build process, helpers for text and table format parsing, and attempts to implement a set of different algorithms. The build process creates a data folder with the structure
+### Scripts
+
+/build - This contains information used by the build process. The parse-crawler and build-crawler-dataset is finished, but parse-filing is still working through a few unit tests to make sure I'm getting the desired behavior.
+
+/helpers - These are helper functions for the parsers, that help to work with text, ensure consistent column formats, identify striped vs. regular table structures, etc.
+
+/parsers - These are functions specifically for parsing tables from filings. The html filings are parsed by functions in the html-parsers.R file, while the text filings are parsed by test-parsers.R. SEC header info is parsed by header-parsers.R, and general-parsers.R contains functions that generalize these calls so the end user doesn't have to specify (e.g. functions that guess text or html, etc.).
+
+
+The build process creates a data folder with the structure
 
 ```
 _data  
@@ -50,4 +75,4 @@ Largely these holdings tables will be based on the N-Q filings, although there h
 
 The main issue with these filings is that there is no standard table structure. Some use ascii characters and spaces to denote their tables, with random linebreaks to make them look nice, and others use html table structures. Even those that use html tables have improper linebreaks, as instead of using some kind of css formatting they decided to make the html look better by putting line breaks where they wouldn't otherwise go.
 
-This makes a general text parser close to impossible, so we are taking a split approach using both more traditional text/html/xml parsers and OCR tools when those fail. This is all still experimental, so if you have comments or suggestions please leave a note.
+For now I have taken the approach of grabbing the text in the SEC filings, normalizing some common financial dataset features (e.g. \$   10000 -> \$10000), 
