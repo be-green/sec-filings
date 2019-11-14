@@ -41,6 +41,7 @@ This is a repo dedicated to building a complete list of SEC filed holdings. Cert
 
 /parsers - These are functions specifically for parsing tables from filings. The html filings are parsed by functions in the html-parsers.R file, while the text filings are parsed by test-parsers.R. SEC header info is parsed by header-parsers.R, and general-parsers.R contains functions that generalize these calls so the end user doesn't have to specify (e.g. functions that guess text or html, etc.).
 
+/experiments - This is stuff that I want to keep for now, but will eventually be discarded or subsumed into the relevant other folders as it becomes useful. Will be deleted one we reach a release.
 
 The build process creates a data folder with the structure
 
