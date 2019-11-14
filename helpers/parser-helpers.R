@@ -18,7 +18,7 @@ fix_percent_placement <- function(x) {
 # parents close
 # this fixes that
 fix_extra_spaces_in_parens <- function(x) {
-  str_replace_all(x, "[ ]+(?=[^()]*\\))", " ")
+  str_replace_all(x, "[ \n\t]+(?=[^()]*\\))", " ")
 }
 
 fix_vertical_separators <- function(x) {
@@ -32,7 +32,7 @@ fix_vertical_separators <- function(x) {
 # other stuff that can really break the parser
 strange_characters_to_spaces <- function(x) {
   str_replace_all(x, "[\\.]{2,}","\t") %>% 
-    str_replace_all("[^A-Za-z0-9,\\.%\\$\t\n\"\'&\\(\\) \\/]"," ")
+    str_replace_all("[^A-Za-z0-9,\\.%\\$\t\n\"\'&\\(\\) \\/-]"," ")
 }
 
 # regex to replace between 1 and 3 spaces or dashes with spaces

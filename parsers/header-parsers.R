@@ -3,12 +3,10 @@
 # CIK number of parent company
 # share class and ticker of a fund
 
-
 get_sec_header <- function(filing) {
   do.call(paste0("get_", guess_header_format(filing), "_series_data"),
           args = list(filing = filing))
 }
-
 
 # xbrl is not xml because it has opening tags with no closing
 # tags. This fixes that issue (through brute force).
@@ -79,7 +77,7 @@ get_text_sec_header <- function(filing) {
   
   sec_header[,1] <- str_replace_all(sec_header[,1],
                                     " ",
-                                    "-")
+                                    "_")
   
   sec_header[,2] <- str_replace_all(sec_header[,2],
                                     "\t",

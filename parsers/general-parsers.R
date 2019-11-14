@@ -42,7 +42,7 @@ parse_single_table <- function(x) {
     fix_percent_placement %>% 
     fix_extra_spaces_in_parens %>% 
     strange_characters_to_spaces %>%
-    fix_separators %>%
+    fix_dollar_placement %>% # again, for some reason
     read_char_table %>% 
     replace_empty %>% 
     remove_na_cols() %>% 

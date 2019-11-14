@@ -3,11 +3,9 @@
 helper_scripts <- list.files("src/helpers/", full.names = T)
 parser_scripts <- list.files("src/parsers/", full.names = T)
 
-
 ## don't want the output
 invisible(lapply(helper_scripts, source))
 invisible(lapply(parser_scripts, source))
-
 
 # create a list of test filings
 
@@ -21,7 +19,8 @@ library(data.table)
 test_cases <- c("https://www.sec.gov/Archives/edgar/data/832566/0001104659-08-072666.txt",
                 "https://www.sec.gov/Archives/edgar/data/1233310/000093506908000486/0000935069-08-000486.txt",
                 "https://www.sec.gov/Archives/edgar/data/354603/0000935069-08-002855.txt",
-                "https://www.sec.gov/Archives/edgar/data/810598/0000900092-08-000052.txt")
+                "https://www.sec.gov/Archives/edgar/data/810598/0000900092-08-000052.txt",
+                "https://www.sec.gov/Archives/edgar/data/709364/0000949377-08-000097.txt")
 
 # use a specific filing to test our parser
 # thanks to xbrl, html is embedded INSIDE an XML schema
@@ -29,7 +28,13 @@ test_cases <- c("https://www.sec.gov/Archives/edgar/data/832566/0001104659-08-07
 
 ### HTML example ###
 # gets the raw filing text
-filing <- get_filing(test_cases[1])
+filing <- get_filing(test_cases[5])
+
+# get header data from filing
+header <- get_sec_header(filing)
+
+# funds <- header$fund_data
+# fundids <- funds$`series-id` %>% unique
 
 # pulls out the relevant html
 filing_html <- get_filing_html(filing)

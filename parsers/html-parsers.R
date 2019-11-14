@@ -1,7 +1,5 @@
 # html table parsing functions
 
-
-
 # returns an xml2 object containing all of the html
 # in the relevant filing
 # there can be multiple filings per text document,
@@ -14,10 +12,10 @@ get_filing_html <- function(filing) {
     str_split(pattern = "<body", simplify = T) %>% 
     as.vector
   
-  
   # subset those that don't close the body (sometimes a header or footer isn't html)
-  filing_html_tables <- subset(filing_html_list, str_detect(filing_html_list,
-                                                            "</body>"))
+  filing_html_tables <- subset(filing_html_list, 
+                               str_detect(filing_html_list,
+                                          "</body>"))
   
   # identify the locations of the ending character
   ends <- str_locate(filing_html_tables, "/body>")
@@ -55,18 +53,61 @@ find_hr_breaks <- function(tr_nodes) {
   }
 }
 
+unicode_to_tabs <- function(x) {
+  str_replace_all(x, "\\u[0-9]{4}","\t")
+}
+
+spaces_to_tabs <- function(x) {
+  str_replace_all(x, "[ \n]{4,}", "\t")
+}
+
+breaks_to_tabs <- function(x) {
+  str_replace_all(x, "\n", "\t")
+}
+
+remove_redundant_spaces <- function(x) {
+  str_replace_all(x, "[ ]+", " ")
+}
+
+remove_redundant_tabs <- function(x) {
+  str_replace_all(x, "[\t]+", "\t")
+}
+
+remove_firstchar_linebreaks <- function(x) {
+  str_replace_all(x, "^\n","")
+}
+
 # convert html table to character for cleanup
 # finance firms REALLY don't know how to use
 # html tables properly
-parse_single_html_table <- function(html_table) {
-  html_nodes(html_table, "tr") %>% 
-    html_text() %>% 
-    paste0(collapse = "\n")
+parse_single_html_table <- function(single_table) {
+  
+  invisible(xml_replace(xml_find_all(single_table, ".//br"), "p>\n</p"))
+  
+  html_nodes(single_table, "tr") %>%
+    html_text %>% 
+    remove_firstchar_linebreaks() %>% 
+    strange_characters_to_spaces() %>% 
+    remove_redundant_spaces() %>% 
+    spaces_to_tabs() %>% # sometimes there are 4 spaces and \n breaks instead of tabs
+    breaks_to_tabs() %>% # lots of extra \n characters, even within a single table line
+    remove_redundant_tabs() %>% 
+    fix_extra_spaces_in_parens %>% 
+    fix_dollar_placement %>% 
+    fix_percent_placement %>% 
+    fix_extra_spaces_in_parens %>% 
+    strange_characters_to_spaces %>%
+    fix_dollar_placement %>% # again, for some reason
+    read_char_table %>% 
+    replace_empty %>% 
+    remove_na_cols() %>% 
+    unique %>% 
+    .[complete.cases(.)]
 }
 
 # loop through the tables and apply the parser
 parse_all_html_tables <- function(html_filing) {
-  
+
   # grab all tables in the html
   tbls <- xml2::xml_find_all(html_filing, 
                              ".//table")
@@ -74,16 +115,19 @@ parse_all_html_tables <- function(html_filing) {
   # filter out tables without numbers
   lapply(tbls, parse_single_html_table) %>% 
     Filter(function(x) 
-      str_count(x, 
-                "[0-9],[0-9]") > 0 & !is.null(x),
+      suppressWarnings({
+        str_count(x, 
+                "[0-9],[0-9]") > 0 & !is.null(x)
+        }),
       .)
 }
 
 # parse an html filing
 parse_filing_html <- function(html_filing) {
   
-  html_filings <- get_filing_html(html_filing)
-  
+  suppressWarnings({
+    html_filings <- get_filing_html(html_filing)
+  })
   # parse the tables, filter out the null ones and ones with no numbers
   lapply(html_filings, parse_all_html_tables) %>% 
     Filter(function(x) 
