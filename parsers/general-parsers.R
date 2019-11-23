@@ -84,12 +84,7 @@ get_relevant_tables <- function(df_list) {
 }
 
 combine_all_tables_from_filing <- function(filing_html_tables) {
-  
-  if(is.list(filing_html_tables[[1]])) {
-    filing_html_tables <- unlist(filing_html_tables, recursive = F)
-  }
-  
-  parse_multiple_tables(filing_html_tables) %>% 
+  filing_html_tables %>% 
     get_relevant_tables %>% 
     rbindlist
 }

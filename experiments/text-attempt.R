@@ -1,12 +1,11 @@
 
 # source relevant scripts first
-allhelpers <- list.files("src/helpers/", full.names = T)
-allparsers <- list.files("src/parsers/", full.names = T)
+allhelpers <- list.files("helpers/", full.names = T)
+allparsers <- list.files("parsers/", full.names = T)
 
 ## don't want the output
 invisible(lapply(allhelpers, source))
 invisible(lapply(allparsers, source))
-invisible(source("src/build/parse-filing.R"))
 
 # create a list of test filings
 

@@ -7,6 +7,36 @@ fix_dollar_placement <- function(x) {
   str_replace_all(x, "(?<=\\$)(.*?)(?=[0-9])", "")
 }
 
+remove_dollar_signs <- function(x) {
+  UseMethod("remove_dollar_signs")
+}
+
+remove_dollar_signs.default <- function(x){
+  x
+}
+
+remove_dollar_signs.character <- function(x) {
+  str_replace_all(x, fixed("$"), "")
+}
+
+remove_dollar_signs.data.table <- function(x) {
+  x[,lapply(.SD, remove_dollar_signs), SDcols = colnames(x)]
+}
+
+# checks to see if x could be read in as a table
+# this process converts separators to tabs
+check_if_table <- function(x) {
+  if(length(x) <= 1) {
+    if(str_detect(x, "\t")) {
+      T
+    } else {
+      F
+    }
+  } else {
+    T
+  }
+}
+
 # fixes when there are large spaces or tabs between the number and the
 # percent sign afterwards (fairly common)
 fix_percent_placement <- function(x) {
@@ -25,6 +55,17 @@ fix_vertical_separators <- function(x) {
   if(str_count(x, "\n[\n\t ]+\n") > 10) {
     str_replace_all(x, "[\n\t ]+\n", "\n")
   }
+}
+
+# lots of filings use this unicode control character instead of dashes...
+fix_u0096 <- function(x) {
+  # endash
+  x <- str_replace_all(x, "\u0096", "-")
+  
+  # emdash
+  x <- str_replace_all(x, "[-]+", "-")
+  
+  x
 }
 
 # attempt to remove characters outside of a typical range of
@@ -48,9 +89,13 @@ fix_separators <- function(x) {
 # read the text as a table
 # using tabs as the delimiter
 read_char_table <- function(x){
-  fread(text = x, 
-        header = F, 
-        fill = T,
-        verbose = F,
-        sep = "\t")
+  if(check_if_table(x)) {
+
+    x %>% 
+      str_split(pattern = "\t", simplify = T) %>% 
+      as.data.table 
+    
+  } else {
+    data.table()
+  }
 }

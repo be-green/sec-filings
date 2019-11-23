@@ -77,59 +77,122 @@ remove_firstchar_linebreaks <- function(x) {
   str_replace_all(x, "^\n","")
 }
 
+# custom xml_text function for table cells
+
+html_text <- function(x, trim = TRUE) {
+  xml_text(x, trim = trim)
+}
+
+xml_text <- function(x, trim = TRUE) {
+  UseMethod("xml_text")
+}
+
+xml_text.xml_nodeset <- function(x, trim = TRUE) {
+  vapply(x, xml_text, trim = trim, FUN.VALUE = character(1))
+}
+
+xml_text.xml_node <- function (x, trim = TRUE) 
+{
+  res <- xml2:::node_text(x$node)
+  if (isTRUE(trim)) {
+    res <- str_replace_all(res, "[ \n\r\t]+", " ")
+  }
+  res
+}
+
+# reduced version of html_table
+# to allow custom post-processing of the strings
+get_table_data <- function (x, trim = TRUE) {
+  stopifnot(html_name(x) == "table")
+  rows <- html_nodes(x, "tr")
+  cells <- lapply(rows, "html_nodes", xpath = ".//td|.//th")
+
+  values <- lapply(cells, html_text, trim = trim) %>% 
+    lapply(str_trim) %>% 
+    lapply(replace_empty) %>% 
+    lapply(remove_dollar_signs) %>%  # often in their own cell, messes up parser
+    lapply(function(x) subset(x, !is.na(x))) %>% 
+    lapply(function(x) paste0(x, collapse = "\t")) %>% 
+    unlist(recursive = F)
+  
+  values
+}
+
+string_to_na <- function(vec) {
+  vec[which(vec == "NA")] <- NA
+  vec
+}
+
+
 # convert html table to character for cleanup
 # finance firms REALLY don't know how to use
 # html tables properly
-parse_single_html_table <- function(single_table) {
+parse_single_html_table <- function(single_table, fund_header = NULL) {
+  
+  # for future use
+  if(!is.null(fund_header)) {
+    
+  }
   
   invisible(xml_replace(xml_find_all(single_table, ".//br"), "p>\n</p"))
   
-  html_nodes(single_table, "tr") %>%
-    html_text %>% 
+  get_table_data(single_table) %>% 
     remove_firstchar_linebreaks() %>% 
+    fix_u0096 %>% # lots of filings use this instead of regular dashes...
     strange_characters_to_spaces() %>% 
-    remove_redundant_spaces() %>% 
     spaces_to_tabs() %>% # sometimes there are 4 spaces and \n breaks instead of tabs
     breaks_to_tabs() %>% # lots of extra \n characters, even within a single table line
     remove_redundant_tabs() %>% 
+    remove_redundant_spaces() %>% 
+    remove_dollar_signs %>% # might generalize this to currency later
     fix_extra_spaces_in_parens %>% 
-    fix_dollar_placement %>% 
     fix_percent_placement %>% 
     fix_extra_spaces_in_parens %>% 
     strange_characters_to_spaces %>%
-    fix_dollar_placement %>% # again, for some reason
     read_char_table %>% 
     replace_empty %>% 
-    remove_na_cols() %>% 
     unique %>% 
+    .[,lapply(.SD, string_to_na), .SDcols = colnames(.)] %>% 
+    remove_na_cols() %>% 
     .[complete.cases(.)]
 }
 
 # loop through the tables and apply the parser
-parse_all_html_tables <- function(html_filing) {
+parse_all_html_tables <- function(html_filing, html_header) {
 
   # grab all tables in the html
   tbls <- xml2::xml_find_all(html_filing, 
                              ".//table")
   
   # filter out tables without numbers
-  lapply(tbls, parse_single_html_table) %>% 
+  lapply(tbls, 
+         parse_single_html_table,
+         fund_header = html_header$fund_data) %>% 
     Filter(function(x) 
       suppressWarnings({
-        str_count(x, 
-                "[0-9],[0-9]") > 0 & !is.null(x)
+        
+            any(
+              sapply(
+                x,
+                function(x)
+                  str_count(x, 
+                "[0-9],[0-9]")
+                )> 0) & !is.null(x)
         }),
       .)
 }
 
 # parse an html filing
-parse_filing_html <- function(html_filing) {
+parse_filing_html <- function(html_filing, html_header) {
   
   suppressWarnings({
     html_filings <- get_filing_html(html_filing)
   })
+  
   # parse the tables, filter out the null ones and ones with no numbers
-  lapply(html_filings, parse_all_html_tables) %>% 
+  lapply(html_filings, 
+         parse_all_html_tables,
+         html_header = html_header) %>% 
     Filter(function(x) 
         length(x) > 0,
       .)

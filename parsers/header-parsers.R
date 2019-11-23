@@ -18,7 +18,7 @@ finish_xml <- function(xml_string, start_tag) {
     unique
   
   for(i in 1:length(extracts)) {
-    xml_string <- str_replace_all(xml_string, extracts[i], 
+    xml_string <- str_replace_all(xml_string, fixed(extracts[i]), 
                                   paste0(extracts[i],"</",start_tag,">"))
     
   }
@@ -76,7 +76,7 @@ get_text_sec_header <- function(filing) {
     str_split(":", simplify = T)
   
   sec_header[,1] <- str_replace_all(sec_header[,1],
-                                    " ",
+                                    "[ -]",
                                     "_")
   
   sec_header[,2] <- str_replace_all(sec_header[,2],
@@ -105,7 +105,10 @@ get_xml_series_data <- function(filing) {
     sc_table <- setdiff(x, x[not_shareclass]) %>% 
       lapply(function(x) unlist(x) %>% t %>% as.data.table) %>% 
       rbindlist(fill = T, use.names = T)
-    data.table(series_table, sc_table)
+    fulldata <- data.table(series_table, sc_table)
+    setnames(fulldata, colnames(fulldata),
+             str_replace_all(colnames(fulldata), "[- ]","_"))
+    fulldata[]
   }
   
   series_data <- xml_find_all(sec_header, ".//series") %>% 
