@@ -69,3 +69,38 @@ filing_text_tables <- get_text_filing_tables(text_filing)
 get_filing_tables(scwf[1])
 get_filing_tables(text_examples[2])
 
+# random sample tests
+
+## single year to start
+filing_year <- 2008
+
+# list the filings for the year, combine them into one data table
+all_filings <-
+  lapply(list_filings(filing_year), fread) %>% 
+  rbindlist(idcol = T) %>% 
+  .[FilingType %like% "N-Q|N-30D"] # subset for just N-Q filings
+
+# text document version of the filing
+# otherwise it links to the parent site on the SEC website
+# not the document
+all_filings[,FilingText := str_replace(FilingLink, 
+                                       pattern = "-index.htm",
+                                       ".txt")]
+
+n_tests <- 10
+
+# randomly sample filings
+test_filings <- sample(all_filings$FilingText, n_tests)
+
+tests <- list()
+
+for(i in 1:n_tests) {
+  print(i)
+  # safely handle errors and save in a string
+  tests[[i]] <- tryCatch({
+    get_filing_tables(test_filings[i])
+  }, 
+  error = function(e) e)
+}
+
+lapply(tests, length)

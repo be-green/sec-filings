@@ -6,7 +6,7 @@ This is a repo dedicated to building a complete list of SEC filed holdings. Cert
 
 * The SEC Crawlers are working
 * Multiple working test casts for html filings
-* Prototype text parser, and filter that guesses text vs. html
+* Working text and html parsers and filter that guesses text vs. html
 * Tests have worked with multiple filing types
 * Header parsing works for all filing types
 * Column format classifiers are working as intended
