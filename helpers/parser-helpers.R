@@ -99,3 +99,53 @@ read_char_table <- function(x){
     data.table()
   }
 }
+
+# parse tables that use horizontal line breaks to demarcate
+# rows rather than normal html table formats
+find_hr_breaks <- function(tr_nodes) {
+  if(length(html_nodes(tr_nodes, "hr")) > 0) {
+    splits <- html_nodes(tr_nodes, "hr") 
+    xml_text(splits) <- "SPLIT-ROWS-HERE"
+  } else {
+    return(tr_nodes)
+  }
+}
+
+unicode_to_tabs <- function(x) {
+  str_replace_all(x, "\\u[0-9]{4}","\t")
+}
+
+spaces_to_tabs <- function(x) {
+  str_replace_all(x, "[ \n]{4,}", "\t")
+}
+
+breaks_to_tabs <- function(x) {
+  str_replace_all(x, "\n", "\t")
+}
+
+remove_redundant_spaces <- function(x) {
+  str_replace_all(x, "[ ]+", " ")
+}
+
+remove_redundant_tabs <- function(x) {
+  str_replace_all(x, "[\t]+", "\t")
+}
+
+remove_firstchar_linebreaks <- function(x) {
+  str_replace_all(x, "^\n","")
+}
+
+
+unlist_until_table <- function(table_list) {
+  # while table_list is a list of length > 0
+  # unlist until there is at least one element a level down
+  # that is a table
+  while(is.list(table_list) & 
+        !any(sapply(table_list, function(x) "data.frame" %in% class(x))) &
+        length(table_list) > 0) {
+    table_list <- unlist(table_list, recursive = F)
+  }
+  
+  table_list
+}
+

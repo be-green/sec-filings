@@ -42,6 +42,28 @@ get_filing_html <- function(filing) {
   
 }
 
+get_html_filing_tables <- function(filing) {
+  
+  # get header data from filing
+  header <- get_sec_header(filing)
+  
+  # funds <- header$fund_data
+  # fundids <- funds$`series-id` %>% unique
+  
+  # pulls out the relevant html
+  filing_html <- get_filing_html(filing)
+  
+  # pulls out the tables in the html, converts to text
+  # for cleanup
+  filing_html_tables <- lapply(filing_html, 
+                               parse_filing_html,
+                               html_header = header) %>% 
+    unlist_until_table %>% # removes lists of lists
+    Filter(x = ., function(x) length(x) > 0) # get rid of empty tables
+  
+  filing_html_tables
+}
+
 # parse tables that use horizontal line breaks to demarcate
 # rows rather than normal html table formats
 find_hr_breaks <- function(tr_nodes) {

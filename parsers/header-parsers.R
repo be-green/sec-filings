@@ -18,6 +18,7 @@ finish_xml <- function(xml_string, start_tag) {
     unique
   
   for(i in 1:length(extracts)) {
+    
     xml_string <- str_replace_all(xml_string, fixed(extracts[i]), 
                                   paste0(extracts[i],"</",start_tag,">"))
     
@@ -27,9 +28,12 @@ finish_xml <- function(xml_string, start_tag) {
   
 }
 
+# guess the format of a header
 guess_header_format <- function(filing) {
+  
   # grab header
-  sec_header <- str_extract_all(filing, "<sec-header>.*</sec-header>")[[1]]
+  nospace_filing <- str_replace_all(filing, "\r\n", "")
+  sec_header <- str_extract_all(nospace_filing, "<sec-header>(.*?)</sec-header>")[[1]]
   
   if(str_detect(sec_header, "<series>")) {
     "xml"
@@ -66,6 +70,14 @@ get_text_sec_header <- function(filing) {
   # then we replace duplicate tabs
   # then we split everything into key-value pairs
   # based on the notion key:\tvalue\t
+  
+  
+  # I realize this is kind of a janky fix, we shall
+  # see if we keep it. Probably not enough of a 
+  # hit to speed that it matters
+  if(str_detect(filing, "\r\n")) {
+    filing <- str_replace_all(filing, "\r\n", "")
+  }
   
   sec_header <- str_extract_all(filing, "<sec-header>.*</sec-header>")[[1]] %>% 
     str_replace_all(., "<[^>]+>","") %>% 

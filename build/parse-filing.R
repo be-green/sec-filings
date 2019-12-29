@@ -22,39 +22,50 @@ test_cases <- c("https://www.sec.gov/Archives/edgar/data/832566/0001104659-08-07
                 "https://www.sec.gov/Archives/edgar/data/709364/0000949377-08-000097.txt",
                 "https://www.sec.gov/Archives/edgar/data/99188/0001104659-08-012285.txt")
 
-# growth fund of american in 2008
-
+# these american funds work great!
 gfa <- 
   c("https://www.sec.gov/Archives/edgar/data/44201/0000051931-08-000025.txt", 
     "https://www.sec.gov/Archives/edgar/data/44201/0000051931-08-000430.txt"
   )
 
+amcap <- c("https://www.sec.gov/Archives/edgar/data/4405/0000051931-08-000024.txt", 
+           "https://www.sec.gov/Archives/edgar/data/4405/0000051931-08-000429.txt")
+
+scwf <- c("https://www.sec.gov/Archives/edgar/data/858744/0000051931-08-000071.txt", 
+          "https://www.sec.gov/Archives/edgar/data/858744/0000051931-08-000590.txt")
+
+# text filing example
+
+
 # use a specific filing to test our parser
 # thanks to xbrl, html is embedded INSIDE an XML schema
 # normal xml parsers don't recognize it
 
+html_filing <- get_filing(scwf[1])
+
 ### HTML example ###
-# gets the raw filing text
-filing <- get_filing(gfa[1])
-
-# get header data from filing
-header <- get_sec_header(filing)
-
-# funds <- header$fund_data
-# fundids <- funds$`series-id` %>% unique
-
-# pulls out the relevant html
-filing_html <- get_filing_html(filing)
-
-# pulls out the tables in the html, converts to text
-# for cleanup
-filing_html_tables <- lapply(filing_html, 
-                             parse_filing_html,
-                             html_header = header) %>% 
-  # unlist(recursive = F) %>% # hack for now
-  unlist(recursive = F) %>% 
-  Filter(x = ., function(x) length(x) > 0)
+get_html_filing_tables(scwf[1])
 
 # dispatch relevant parser
-parsed_tables <- combine_all_tables_from_filing(filing_html_tables)
+# parsed_tables <- combine_all_tables_from_filing(filing_html_tables)
+
+### text example ###
+
+text_examples <- c(
+  "https://www.sec.gov/Archives/edgar/data/1352280/0000950124-08-001579.txt",
+  "https://www.sec.gov/Archives/edgar/data/1329992/0000935069-08-000485.txt"
+)
+
+text_filing <- get_filing(text_examples[2])
+
+
+# pulls out the relevant html
+filing_text_tables <- get_text_filing_tables(text_filing)
+
+
+# generic version
+
+# same as html example above
+get_filing_tables(scwf[1])
+get_filing_tables(text_examples[2])
 
