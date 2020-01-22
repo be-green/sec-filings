@@ -45,7 +45,7 @@ list_filings <- function(year) {
 
 # guess whether it is text or html format
 guess_text_html <- function(filing) {
-  if(any(str_detect(string = filing, fixed("<html>")))) {
+  if(any(str_detect(string = tolower(filing), fixed("<tr>")))) {
     "html"
   } else {
     "text"

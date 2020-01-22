@@ -4,6 +4,84 @@ string_to_na <- function(vec) {
   vec
 }
 
+guess_separator <- function(char_table) {
+  if(str_detect(char_table, "[.]{4,}")) {
+    
+  }
+}
+
+
+identify_breakpoints <- function(x) {
+  
+  all_breakpoints <- list()
+  
+  for(i in 1:length(x)) {
+    
+    locations <- str_locate_all(x[i], "[^\\S\r\n]{2,}+")[[1]]
+    start <- locations[,"start"]
+    end <- locations[,"end"]
+    
+    if(nrow(locations) > 0) {
+      
+      temp <- matrix(ncol = 2, nrow = length(start) + 1)
+      temp[,2] <- c(start, nchar(x[i]))
+      temp[, 1] <- c(0,end)
+      
+      all_breakpoints[[i]] <- temp
+      
+    } else {
+      all_breakpoints[[i]] <- NA
+    }
+  }
+  
+  c(all_breakpoints, max(sapply(x, nchar)))
+  
+}
+
+get_modal_breakpoints <- function(all_breakpoints,
+                                  freq = 0.1) {
+  
+  num_obs <- length(all_breakpoints)
+  
+  frequencies <- 
+    unlist(all_breakpoints) %>% 
+    subset(., . > 1) %>% 
+    table %>% 
+    divide_by(num_obs) %>% 
+    subset(., . > freq) # arbitrary threshold for bre
+  
+  c(1, sort(as.integer(names(frequencies))))
+  
+}
+
+make_positions <- function(breakpoints) {
+  
+  start <- breakpoints[1:(length(breakpoints) - 1)]
+  end <- breakpoints[2:length(breakpoints)]
+  readr::fwf_positions(start, end, col_names = NULL)
+}
+
+read_as_fwf <- function(x) {
+  
+  x <- fix_u0096(x)
+  fwf_pos <- x %>% 
+    str_split("\r\n") %>%
+    .[[1]] %>% 
+    identify_breakpoints %>% 
+    get_modal_breakpoints(freq = 0.2) %>% 
+    make_positions
+  
+
+  suppressWarnings({
+    
+    readr::read_fwf(x, fwf_pos, ) %>% 
+      as.data.table
+    
+  })  
+}
+
+
+
 # parse single text table
 # we kept the linebreaks from read in the lines
 # unlike the html table parser
@@ -14,27 +92,12 @@ parse_single_text_table <- function(single_table, fund_header = NULL) {
   
   for(i in 1:length(single_table)) {
     tbl_list[[i]] <- 
-      single_table[i] %>% 
-        str_split("\r\n") %>%
-        .[[1]] %>% 
-        remove_dollar_signs %>% # might generalize this to currency later
-        remove_firstchar_linebreaks() %>% 
-        fix_u0096 %>% # lots of filings use this instead of regular dashes...
-        strange_characters_to_spaces() %>% 
-        spaces_to_tabs() %>% # sometimes there are 4 spaces and \n breaks instead of tabs
-        breaks_to_tabs() %>% # lots of extra \n characters, even within a single table line
-        remove_redundant_tabs() %>% 
-        remove_redundant_spaces() %>% 
-        fix_extra_spaces_in_parens %>% 
-        fix_percent_placement %>% 
-        fix_extra_spaces_in_parens %>% 
-        strange_characters_to_spaces %>%
-        read_char_table %>% 
-        replace_empty %>% 
+      single_table[i]  %>%
+        read_as_fwf %>% 
+        remove_dollar_signs %>%
         unique %>% 
         .[,lapply(.SD, string_to_na), .SDcols = colnames(.)] %>% 
-        remove_na_cols() %>% 
-        .[complete.cases(.)]
+        remove_na_cols()
     
   }
   

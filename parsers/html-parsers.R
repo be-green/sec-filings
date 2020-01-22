@@ -17,6 +17,16 @@ get_filing_html <- function(filing) {
                                str_detect(filing_html_list,
                                           "</body>"))
   
+  if(length(filing_html_tables) == 0){
+    tryCatch({
+      tmp <- list(xml2::read_html(filing))
+      return(tmp)
+      }, 
+      error = function(e) {
+      "Can't locate <body> tag in html filing"
+    })
+  }
+  
   # identify the locations of the ending character
   ends <- str_locate(filing_html_tables, "/body>")
   
@@ -207,14 +217,8 @@ parse_all_html_tables <- function(html_filing, html_header) {
 # parse an html filing
 parse_filing_html <- function(html_filing, html_header) {
   
-  suppressWarnings({
-    html_filings <- get_filing_html(html_filing)
-  })
-  
-  # parse the tables, filter out the null ones and ones with no numbers
-  lapply(html_filings, 
-         parse_all_html_tables,
-         html_header = html_header) %>% 
+  parse_all_html_tables(html_filing, 
+                        html_header = html_header) %>% 
     Filter(function(x) 
         length(x) > 0,
       .)

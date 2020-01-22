@@ -41,10 +41,8 @@ scwf <- c("https://www.sec.gov/Archives/edgar/data/858744/0000051931-08-000071.t
 # thanks to xbrl, html is embedded INSIDE an XML schema
 # normal xml parsers don't recognize it
 
-html_filing <- get_filing(scwf[1])
-
 ### HTML example ###
-get_html_filing_tables(scwf[1])
+get_filing_tables(scwf[1])
 
 # dispatch relevant parser
 # parsed_tables <- combine_all_tables_from_filing(filing_html_tables)
@@ -61,7 +59,6 @@ text_filing <- get_filing(text_examples[2])
 
 # pulls out the relevant html
 filing_text_tables <- get_text_filing_tables(text_filing)
-
 
 # generic version
 
@@ -87,13 +84,15 @@ all_filings[,FilingText := str_replace(FilingLink,
                                        pattern = "-index.htm",
                                        ".txt")]
 
-n_tests <- 10
+n_tests <- 50
 
 # randomly sample filings
 test_filings <- sample(all_filings$FilingText, n_tests)
 
 tests <- list()
 
+# for 100 tests this took about 12 minutes
+# when I ran it last
 for(i in 1:n_tests) {
   print(i)
   # safely handle errors and save in a string
@@ -103,4 +102,34 @@ for(i in 1:n_tests) {
   error = function(e) e)
 }
 
-lapply(tests, length)
+# I've done a few tests
+# this one said that 87/100 of these parsed filings
+# return at least some tables without error
+# other smaller samples 
+
+tests_with_returns <- 
+  Filter(function(x) length(x) > 0 & 
+           !"simpleError" %in% class(x) & !"message" %in% names(x), 
+         tests)
+
+
+num_long_tables <- function(x, len = 10) {
+  sapply(x, nrow) %>% 
+    subset(., . > len) %>% 
+    length
+}
+
+tests_with_returns %>% 
+  length  %>% 
+  paste0("At least ", ., " out of ", 
+         n_tests, " tests returned some tables.") %>% 
+  message
+
+# some of these still didn't work though
+sapply(tests_with_returns, num_long_tables) %>% 
+  subset(., . > 0) %>% 
+  length %>% 
+  paste0("At least ", ., " out of ", 
+         n_tests, " tests returned tables with holdings.") %>% 
+  message
+

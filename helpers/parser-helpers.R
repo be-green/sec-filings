@@ -20,14 +20,14 @@ remove_dollar_signs.character <- function(x) {
 }
 
 remove_dollar_signs.data.table <- function(x) {
-  x[,lapply(.SD, remove_dollar_signs), SDcols = colnames(x)]
+  x[,lapply(.SD, remove_dollar_signs), .SDcols = colnames(x)]
 }
 
 # checks to see if x could be read in as a table
 # this process converts separators to tabs
 check_if_table <- function(x) {
   if(length(x) <= 1) {
-    if(str_detect(x, "\t")) {
+    if(!is.na(x) & str_detect(x, "\t")) {
       T
     } else {
       F

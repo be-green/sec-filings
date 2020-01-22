@@ -9,9 +9,9 @@ all_na <- function(x) {
   !any_values(unique(x))
 }
 
-# more than 80% NA
-almost_all_na <- function(x){
-  length(which(is.na(x)))/length(x) > 0.8
+# more than X% NA
+almost_all_na <- function(x, level = 0.7){
+  length(which(is.na(x)))/length(x) > level
 }
 
 ## replace empty strings in tables
@@ -55,8 +55,8 @@ na_cols <- function(df) {
 }
 
 ### identify columns that are almost all NA
-almost_na_cols <- function(df) {
-  sapply(df, almost_all_na)
+almost_na_cols <- function(df, level = 0.7) {
+  sapply(df, almost_all_na, level = level)
 }
 
 ### method for removing NA columns for data.frames and data.tables
@@ -75,19 +75,19 @@ remove_na_cols.data.table <- function(df) {
 } 
 
 ### methods for removing almost NA columns 
-remove_almost_na_cols <- function(df) {
+remove_almost_na_cols <- function(df, level = 0.7) {
   UseMethod("remove_almost_na_cols")
 }
 
-remove_almost_na_cols.data.frame <- function(df) {
-  cols <- which(!almost_na_cols(df))
+remove_almost_na_cols.data.frame <- function(df, level = 0.7) {
+  cols <- which(!almost_na_cols(df, level))
   df[,cols]
 }
 
-remove_almost_na_cols.data.table <- function(df) {
-  cols <- which(!almost_na_cols(df))
+remove_almost_na_cols.data.table <- function(df, level = 0.7) {
+  cols <- which(!almost_na_cols(df, level))
   df[,(cols), with = F]
-} 
+}
 
 
 ## row functions
