@@ -1,4 +1,11 @@
 
+# prob break | space
+# prior = freq spaces
+# posterior 
+bayes_update <- function(pointwise_prior, pointwise_obs) {
+  pointwise_prior
+}
+
 string_to_na <- function(vec) {
   vec[which(vec == "NA")] <- NA
   vec
@@ -17,7 +24,7 @@ identify_breakpoints <- function(x) {
   
   for(i in 1:length(x)) {
     
-    locations <- str_locate_all(x[i], "[^\\S\r\n]{2,}+")[[1]]
+    locations <- str_locate_all(x[i], " ")[[1]]
     start <- locations[,"start"]
     end <- locations[,"end"]
     
@@ -54,12 +61,38 @@ get_modal_breakpoints <- function(all_breakpoints,
   
 }
 
+# (5/nchar(x[10]))/(length(which(strsplit(x[10],"")[[1]] == " "))/nchar(x[10]))
+# 
+# 
+space_freq <- sapply(fwf_pos, as.vector)
+char_length <- lapply(x, nchar)
+
+space_freq[[1]] <- NULL
+
+tmp <- list()
+for(i in 1:length(space_freq)) {
+  tmp[[i]] <- ifelse(1:char_length[[i]] %in% space_freq[[i]],
+         1, 0)
+}
+
+tmp <- tmp %>% 
+  lapply(function(x) data.table(t(x))) %>% 
+  rbindlist(fill = T)
+
+# P(Break | Space) = P(Space | Break)*P(Break)/P(Space)
+
 make_positions <- function(breakpoints) {
   
   start <- breakpoints[1:(length(breakpoints) - 1)]
   end <- breakpoints[2:length(breakpoints)]
   readr::fwf_positions(start, end, col_names = NULL)
 }
+
+num_spaces <- sum(stringr::str_count(x, " "))
+num_characters <- sum(stringr::str_length(x))
+percent_spaces <- num_spaces/num_characters
+
+fwf_pos
 
 read_as_fwf <- function(x) {
   

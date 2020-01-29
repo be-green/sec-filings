@@ -106,12 +106,10 @@ for(i in 1:n_tests) {
 # this one said that 87/100 of these parsed filings
 # return at least some tables without error
 # other smaller samples 
-
 tests_with_returns <- 
   Filter(function(x) length(x) > 0 & 
            !"simpleError" %in% class(x) & !"message" %in% names(x), 
          tests)
-
 
 num_long_tables <- function(x, len = 10) {
   sapply(x, nrow) %>% 

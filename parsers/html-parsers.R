@@ -48,7 +48,7 @@ get_filing_html <- function(filing) {
                       file_list)
   
   # read via an xml parser for extracting tables
-  lapply(file_list, xml2::read_html)
+  lapply(file_list, xml2::read_html, options = "HUGE")
   
 }
 
