@@ -4,6 +4,12 @@ library(stringr)
 
 get_crawler <- function(year, quarter){
   
+  if(!dir.exists(paste0("data/"))) {
+    dir.create("data")
+    dir.create("data/raw")
+    dir.create("data/processed")
+  }
+  
   if (!dir.exists(paste0("data/raw/",year))){
     dir.create(paste0("data/raw/",year))
   }

@@ -42,8 +42,6 @@ all_filings <- tenKs$FilingText
 filing_list <- list()
 
 for(i in 1:length(all_filings)) {
-
-profvis::profvis({
   
   filing <- get_filing(all_filings[i])
   header <- get_sec_header(filing)
@@ -81,13 +79,13 @@ profvis::profvis({
   
   header$parent_data$ticker <- ticker
   filing_list[[i]] <- header$parent_data
-  
-})
 }
-
-microbenchmark::microbenchmark({
-  asdf <- readLines("tmp.txt")
-})
 
 cik_with_ticker <- 
   rbindlist(filing_list, fill = T, use.names = T)
+
+if(!dir.exists(paste0("data/10k/", filing_year))) {
+  dir.create(paste0("data/10k/", filing_year))  
+}
+
+fwrite(cik_with_ticker, paste0("data/10k/", filing_year, "/10ktickers.csv"))
