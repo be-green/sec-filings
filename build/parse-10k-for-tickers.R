@@ -41,7 +41,10 @@ all_filings <- tenKs$FilingText
 
 filing_list <- list()
 
-for(i in 1:1000) {
+for(i in 1:length(all_filings)) {
+
+profvis::profvis({
+  
   filing <- get_filing(all_filings[i])
   header <- get_sec_header(filing)
   
@@ -56,7 +59,6 @@ for(i in 1:1000) {
     text <- filing
   }
   
-  
   # remove all non-alpha numeric characters
   text <- str_replace_all(text,"[^0-9A-Za-z ]", " ")
   
@@ -64,15 +66,28 @@ for(i in 1:1000) {
   text <- str_replace_all(text, "[ \t\n\r]+", " ")
   
   tokenized <- tokens(text)
-  tokenized <- quanteda::tokens_remove(tokenized, stopwords("english"))
+  tokenized <- quanteda::tokens_remove(tokenized, 
+                                       c(stopwords("english")))
   
+  tokenized
   
-  ticker <- tokens_select(tokenized, pattern = "symbol", 
-                selection = "keep", window = 1) %>% 
+  ticker <- tokens_select(tokenized, pattern = "symbol|symbols", 
+                valuetype = "regex", 
+                selection = "keep", 
+                window = 1) %>% 
     unlist %>% 
+    subset(., nchar(.) < 5) %>% 
     tail(1)
-  
   
   header$parent_data$ticker <- ticker
   filing_list[[i]] <- header$parent_data
+  
+})
 }
+
+microbenchmark::microbenchmark({
+  asdf <- readLines("tmp.txt")
+})
+
+cik_with_ticker <- 
+  rbindlist(filing_list, fill = T, use.names = T)

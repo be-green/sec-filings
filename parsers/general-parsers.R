@@ -6,14 +6,15 @@ library(stringr)
 # get the text of a filing from a link
 get_filing <- function(filing_text_link) {
   
-  con <- url(filing_text_link, 
-             method = "libcurl")
+  tmp <- tempfile()
+  
+  download.file(filing_text_link, tmp, quiet = T)
   
   filing <- 
-    readLines(con) %>% 
+    readLines(tmp) %>% 
     tolower 
   
-  close(con)
+  unlink(tmp)
   
   do.call(paste0("collapse_", guess_text_html(filing)), 
           args = list(filing = filing))
