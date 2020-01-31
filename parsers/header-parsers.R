@@ -81,25 +81,37 @@ get_text_sec_header <- function(filing) {
   
   sec_header <- str_extract_all(filing, "<sec-header>.*</sec-header>")[[1]] %>% 
     str_replace_all(., "<[^>]+>","") %>% 
-    str_extract(.,"company data:.*") %>% 
-    str_replace_all("[\t]+","\t") %>% 
-    str_extract_all(., "[a-z0-9 ]+:\t[a-z0-9 ]+\t") %>% 
-    .[[1]] %>% 
-    str_split(":", simplify = T)
+    str_split(., pattern = fixed("filer:")) %>% 
+    .[[1]]
   
-  sec_header[,1] <- str_replace_all(sec_header[,1],
-                                    "[ -]",
-                                    "_")
+  sec_header <- subset(sec_header, str_detect(sec_header, "company data:"))
   
-  sec_header[,2] <- str_replace_all(sec_header[,2],
-                                    "\t",
-                                    " ") %>% 
-    str_trim
-
-  header_data <- data.table(t(sec_header[,2]))
-  setnames(header_data, sec_header[,1])
-  
-  header_data[]
+  sec_header <- 
+    lapply(sec_header,
+           function(x) {
+      
+            sec_header <- str_extract(x,"company data:.*") %>% 
+                str_replace_all("[\t]+","\t") %>% 
+                str_extract_all(., "[a-z0-9 ]+:\t[a-z0-9 ]+\t") %>% 
+                .[[1]] %>% 
+                str_split(":", simplify = T)
+        
+            sec_header[,1] <- str_replace_all(sec_header[,1],
+                                              "[ -]",
+                                              "_")
+            
+            sec_header[,2] <- str_replace_all(sec_header[,2],
+                                              "\t",
+                                              " ") %>% 
+              str_trim
+          
+            header_data <- data.table(t(sec_header[,2]))
+            setnames(header_data, sec_header[,1])
+            
+            header_data[]
+      
+    })
+  rbindlist(sec_header, fill = T, use.names = T)
 }
 
 # older filings use a text-based format for headers

@@ -63,23 +63,30 @@ get_modal_breakpoints <- function(all_breakpoints,
 
 # (5/nchar(x[10]))/(length(which(strsplit(x[10],"")[[1]] == " "))/nchar(x[10]))
 # 
+# # 
+# space_freq <- sapply(fwf_pos, as.vector)
+# char_length <- lapply(x, nchar)
 # 
-space_freq <- sapply(fwf_pos, as.vector)
-char_length <- lapply(x, nchar)
-
-space_freq[[1]] <- NULL
-
-tmp <- list()
-for(i in 1:length(space_freq)) {
-  tmp[[i]] <- ifelse(1:char_length[[i]] %in% space_freq[[i]],
-         1, 0)
-}
-
-tmp <- tmp %>% 
-  lapply(function(x) data.table(t(x))) %>% 
-  rbindlist(fill = T)
+# space_freq[[1]] <- NULL
+# 
+# tmp <- list()
+# for(i in 1:length(space_freq)) {
+#   tmp[[i]] <- ifelse(1:char_length[[i]] %in% space_freq[[i]],
+#          1, 0)
+# }
+# 
+# tmp <- tmp %>% 
+#   lapply(function(x) data.table(t(x))) %>% 
+#   rbindlist(fill = T)
 
 # P(Break | Space) = P(Space | Break)*P(Break)/P(Space)
+
+
+# num_spaces <- sum(stringr::str_count(x, " "))
+# num_characters <- sum(stringr::str_length(x))
+# percent_spaces <- num_spaces/num_characters
+# 
+# fwf_pos
 
 make_positions <- function(breakpoints) {
   
@@ -88,11 +95,6 @@ make_positions <- function(breakpoints) {
   readr::fwf_positions(start, end, col_names = NULL)
 }
 
-num_spaces <- sum(stringr::str_count(x, " "))
-num_characters <- sum(stringr::str_length(x))
-percent_spaces <- num_spaces/num_characters
-
-fwf_pos
 
 read_as_fwf <- function(x) {
   
