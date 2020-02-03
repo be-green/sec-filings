@@ -1,22 +1,8 @@
 
-# prob break | space
-# prior = freq spaces
-# posterior 
-bayes_update <- function(pointwise_prior, pointwise_obs) {
-  pointwise_prior
-}
-
 string_to_na <- function(vec) {
   vec[which(vec == "NA")] <- NA
   vec
 }
-
-guess_separator <- function(char_table) {
-  if(str_detect(char_table, "[.]{4,}")) {
-    
-  }
-}
-
 
 identify_breakpoints <- function(x) {
   
@@ -24,7 +10,7 @@ identify_breakpoints <- function(x) {
   
   for(i in 1:length(x)) {
     
-    locations <- str_locate_all(x[i], " ")[[1]]
+    locations <- str_locate_all(x[i], "[ ]{2,}")[[1]]
     start <- locations[,"start"]
     end <- locations[,"end"]
     
