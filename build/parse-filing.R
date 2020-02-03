@@ -1,3 +1,10 @@
+# ideally we should do some kind of
+# package/makefile setup, but
+# this works for now
+if(!dir.exists("data/processed/1999/")) {
+  source("build/build-crawler-dataset.R")
+}
+
 
 # source relevant scripts first
 helper_scripts <- list.files("helpers/", full.names = T)
